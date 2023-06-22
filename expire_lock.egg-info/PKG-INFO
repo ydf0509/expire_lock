@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: expire-lock
-Version: 0.1
+Version: 0.3
 Summary: 可以过期的python线程锁，基于python字典实现的锁可以过期,实现方式类似于redis锁过期的实现机制。使用字典代替 redis服务。
 Home-page: https://github.com/ydf0509/expire_lock
 Author: bfzs
@@ -31,3 +31,63 @@ Description-Content-Type: text/markdown
 
 实现方式类似于redis锁过期的实现机制。使用字典代替 redis服务。
 
+# 安装方式 
+pip install expire_lock
+
+# 过期锁用法
+```python
+import time
+from threading import Thread
+from expire_lock import ExpireLockConf, ExpireLockContextManager
+
+lockx1_expire = ExpireLockConf(expire_seconds=4, lock_key='test_lock_name_expire', )
+
+
+def f(x):
+    with ExpireLockContextManager(lockx1_expire):
+        print(x, time.time())
+        time.sleep(5)
+
+
+
+for i in range(100):
+    Thread(target=f, args=[i]).start()
+
+''''
+400秒钟内就把100个函数的print(x)运行完成了， 过期锁的设置 expire=4 和原生锁.acquire(timeout=4) 作用完全不同。
+
+过期锁意思是一个锁获取后，最多能占用这个锁n秒。
+原生锁.acquire(timeout=4) 意思是最多只等待这个锁4秒钟，强行获得锁。
+'''
+```
+
+和原生线程锁的 lock.acquire(timeout=xx) 完全不一样，原生锁
+
+```python
+
+import time
+from threading import Thread, Lock
+
+test_raw_lock = Lock()
+
+
+def test_raw_lock_fun(x):
+    try:
+        test_raw_lock.acquire(timeout=4)
+        print(x, time.time())
+        time.sleep(5)
+        test_raw_lock.release()
+    except Exception as e:
+        if 'release unlocked lock' in str(e):
+            return
+        print(e)
+
+
+for i in range(100):
+    Thread(target=test_raw_lock_fun, args=[i]).start()
+
+
+''''
+4秒钟内就把100个函数的print(x)运行完成了， 原生锁.acquire(timeout=4) timeout 和 过期锁的4秒过期完全不一样。
+'''
+```

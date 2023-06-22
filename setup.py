@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='expire_lock',  #
-    version='0.1',
+    version='0.3',
     description=(
         '可以过期的python线程锁，基于python字典实现的锁可以过期,实现方式类似于redis锁过期的实现机制。使用字典代替 redis服务。'
     ),
@@ -36,14 +36,14 @@ setup(
         'Topic :: Software Development :: Libraries'
     ],
     install_requires=[
-
+        'nb_log',
     ],
     extras_require={},
 )
 
 """
 
-python setup.py sdist & python -m  twine upload dist/expire_lock-0.1.tar.gz
+python setup.py sdist & python -m  twine upload dist/expire_lock-0.3.tar.gz
 
 
 
